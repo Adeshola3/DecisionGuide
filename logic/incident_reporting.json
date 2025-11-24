@@ -1,0 +1,21 @@
+{
+  "id": "incident_reporting_v1",
+  "title": "Incident Reporting",
+  "description": "Prototype tree to assess whether a vendor's incident/breach notification commitment is acceptable, needs mitigation, or is a blocker.",
+  "root": "q1",
+  "nodes": {
+    "q1": {
+      "text": "Does this vendor process personal or sensitive data on your behalf?",
+      "type": "choice",
+      "options": {
+        "Yes": {
+          "next": "q2"
+        },
+        "No": {
+          "decision": "ACCEPT",
+          "explanation": "The vendor does not process personal or sensitive data. Regulated incident notification timelines usually do not apply. You may still include a generic notification clause as good practice."
+        }
+      }
+    }
+  }
+}
