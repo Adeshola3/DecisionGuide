@@ -1,80 +1,46 @@
 {
   "id": "dpia_requirement_v1",
   "title": "DPIA Requirement Check",
-  "description": "Logic flow to determine whether a DPIA is likely required based on jurisdiction and processing risk.",
-  "root": "jurisdiction",
+  "description": "Helps decide whether a Data Protection Impact Assessment (DPIA) is required based on the nature of processing. This is a generic, jurisdiction-neutral guide.",
+  "root": "personal_data",
   "nodes": {
-    "jurisdiction": {
-      "text": "Which jurisdiction applies to this processing?",
-      "type": "choice",
-      "options": {
-        "UK/EU (UK GDPR / EU GDPR)": {
-          "next": "eu_personal_data"
-        },
-        "Other country with a privacy law": {
-          "next": "generic_personal_data"
-        },
-        "No clear privacy law / unsure": {
-          "decision": "NO_DPIA_FORMAL",
-          "explanation": "Jurisdiction does not have a formal DPIA requirement. You may still conduct a privacy risk assessment as good practice."
-        }
-      }
-    },
-
-    "eu_personal_data": {
-      "text": "Does the processing involve personal data?",
+    "personal_data": {
+      "text": "Does this activity involve processing personal data?",
       "type": "choice",
       "options": {
         "No": {
-          "decision": "NO_DPIA",
-          "explanation": "No personal data processed under UK/EU GDPR → no DPIA required."
+          "decision": "NO_DPIA_REQUIRED",
+          "explanation": "If no personal data is processed, a DPIA is not required. You may still document a basic risk assessment for governance purposes."
         },
         "Yes": {
-          "next": "eu_high_risk"
+          "next": "high_risk_characteristics"
         }
       }
     },
-
-    "eu_high_risk": {
-      "text": "Does the processing meet any high-risk criteria (e.g., large-scale processing, vulnerable subjects, automated decision-making, special category data)?",
+    "high_risk_characteristics": {
+      "text": "Does the processing involve any of the following high-risk characteristics?\n\n- Systematic monitoring (e.g. CCTV, tracking, monitoring behaviour)\n- Large-scale processing of personal data\n- Special category / highly sensitive data (health, biometrics, children, financial, criminal)\n- Vulnerable individuals or power imbalance (patients, employees, students, beneficiaries)\n- Use of new or intrusive technology (AI profiling, behavioural scoring, monitoring tools)",
       "type": "choice",
       "options": {
-        "Yes": {
+        "Yes, one or more apply": {
           "decision": "DPIA_REQUIRED",
-          "explanation": "Processing activity meets GDPR high-risk criteria → DPIA is legally required."
+          "explanation": "Your processing has one or more high-risk characteristics. A DPIA is strongly recommended and may be mandatory under many data protection regimes."
         },
-        "No": {
-          "decision": "DPIA_NOT_REQUIRED_BUT_RECOMMENDED",
-          "explanation": "Processing is personal data but not high-risk. DPIA not mandatory but recommended for assurance."
+        "No, none apply": {
+          "next": "borderline_context"
         }
       }
     },
-
-    "generic_personal_data": {
-      "text": "Does the processing involve personal or sensitive data?",
+    "borderline_context": {
+      "text": "Even if none of the high-risk characteristics clearly apply, is there any context that still makes this activity feel risky (e.g. reputational risk, complex data sharing, cross-border transfers)?",
       "type": "choice",
       "options": {
-        "No": {
-          "decision": "NO_DPIA",
-          "explanation": "No personal/sensitive data → no DPIA requirement under most privacy laws."
+        "Yes, it still feels risky": {
+          "decision": "DPIA_RECOMMENDED",
+          "explanation": "A formal DPIA may not be strictly mandatory, but documenting a DPIA-style assessment will help you evidence that you considered risks and mitigations."
         },
-        "Yes": {
-          "next": "generic_risk"
-        }
-      }
-    },
-
-    "generic_risk": {
-      "text": "Is the processing likely to pose a risk to individual rights (e.g., biometric use, profiling, third-party sharing)?",
-      "type": "choice",
-      "options": {
-        "Yes": {
-          "decision": "PRIVACY_IMPACT_ASSESSMENT_RECOMMENDED",
-          "explanation": "High-risk processing under general privacy laws → a privacy impact assessment is recommended."
-        },
-        "No": {
-          "decision": "NO_DPIA",
-          "explanation": "No significant risks identified → DPIA not required."
+        "No, it is clearly low risk": {
+          "decision": "NO_DPIA_FORMAL",
+          "explanation": "Based on your answers, a formal DPIA is unlikely to be required. Still keep a simple record of your reasoning and basic controls."
         }
       }
     }
