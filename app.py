@@ -3,6 +3,8 @@ from pathlib import Path
 
 import streamlit as st
 
+from utils.export import export_to_pdf, export_to_json, export_to_text, get_filename
+
 
 st.set_page_config(page_title="DecisionGuide", layout="centered")
 
@@ -149,11 +151,63 @@ def main():
         for step in result['path']:
             st.write(f"- {step}")
         
-        # Reset button
-        if st.button("Start over"):
-            st.session_state[answers_key] = {}
-            st.session_state[result_key] = None
-            st.rerun()
+        # Export options
+        st.markdown("---")
+        st.markdown("### Export Options")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            # PDF Export
+            pdf_buffer = export_to_pdf(
+                tree.get("title", "Assessment"),
+                result['decision'],
+                result['explanation'],
+                result['path']
+            )
+            st.download_button(
+                label="📄 Download PDF",
+                data=pdf_buffer,
+                file_name=get_filename(tree.get("title", "Assessment"), "pdf"),
+                mime="application/pdf"
+            )
+        
+        with col2:
+            # JSON Export
+            json_data = export_to_json(
+                tree.get("title", "Assessment"),
+                result['decision'],
+                result['explanation'],
+                result['path']
+            )
+            st.download_button(
+                label="📋 Download JSON",
+                data=json_data,
+                file_name=get_filename(tree.get("title", "Assessment"), "json"),
+                mime="application/json"
+            )
+        
+        with col3:
+            # Text Export
+            text_data = export_to_text(
+                tree.get("title", "Assessment"),
+                result['decision'],
+                result['explanation'],
+                result['path']
+            )
+            st.download_button(
+                label="📝 Download TXT",
+                data=text_data,
+                file_name=get_filename(tree.get("title", "Assessment"), "txt"),
+                mime="text/plain"
+            )
+        
+        with col4:
+            # Reset button
+            if st.button("🔄 Start over"):
+                st.session_state[answers_key] = {}
+                st.session_state[result_key] = None
+                st.rerun()
 
 
 if __name__ == "__main__":
