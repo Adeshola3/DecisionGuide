@@ -25,46 +25,10 @@ def load_trees():
     return trees
 
 
-def count_max_depth(tree, node_id, visited=None):
-    """
-    Count maximum depth (number of questions) from current node to any outcome.
-    """
-    if visited is None:
-        visited = set()
-    
-    if node_id in visited:
-        return 0
-    
-    visited.add(node_id)
-    nodes = tree.get("nodes", {})
-    
-    if node_id not in nodes:
-        return 0
-    
-    node = nodes[node_id]
-    node_type = node.get("type", "choice")
-    
-    if node_type != "choice":
-        return 0
-    
-    # This is a question, count it
-    max_depth = 0
-    
-    # Check all possible branches
-    for option_key, option_data in node.get("options", {}).items():
-        if "next" in option_data:
-            # This leads to another question
-            branch_depth = count_max_depth(tree, option_data["next"], visited.copy())
-            max_depth = max(max_depth, branch_depth)
-        # else: this leads directly to an outcome (terminal node)
-    
-    return 1 + max_depth
-
-
 def traverse_tree_interactive(tree, node_id, answers, path_so_far):
     """
     Interactively traverse the tree.
-    Shows one question at a time with progress indicator.
+    Shows one question at a time with simple progress indicator.
     Returns (decision_code, explanation, full_path) when complete, or (None, None, path) if still in progress.
     """
     nodes = tree["nodes"]
@@ -74,22 +38,11 @@ def traverse_tree_interactive(tree, node_id, answers, path_so_far):
     node_type = node.get("type", "choice")
     
     if node_type == "choice":
-        # Calculate progress
+        # Simple progress - just show question number
         current_question = len(answers) + 1
-        # Estimate remaining questions from current position
-        remaining = count_max_depth(tree, node_id)
-        estimated_total = current_question + remaining - 1  # -1 because current is counted in remaining
         
-        # Show progress (ALWAYS, no conditions)
-        if estimated_total >= current_question:
-            progress_percentage = (current_question / estimated_total) * 100
-        else:
-            progress_percentage = 100
-        
-        # Progress display
-        st.info(f"📊 Question {current_question} of ~{estimated_total}")
-        st.progress(min(progress_percentage / 100, 1.0))
-        st.caption(f"{int(min(progress_percentage, 100))}% complete")
+        # SIMPLE VISIBLE PROGRESS INDICATOR
+        st.info(f"📊 Question {current_question}")
         st.markdown("---")
         
         options = list(node["options"].keys())
@@ -192,9 +145,8 @@ def main():
 
     # Display result if available
     if st.session_state[result_key] is not None:
-        # Show 100% completion
+        # Show completion
         st.success("✅ Assessment Complete!")
-        st.progress(1.0)
         
         st.markdown("---")
         
