@@ -19,6 +19,48 @@ st.markdown("""
     /* Hide Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+/* FORCE ALL TEXT TO BE DARK - AGGRESSIVE FIX */
+* {
+    color: #2d3748 !important;
+}
+
+/* Specific Streamlit elements */
+.stMarkdown, .stMarkdown *, 
+.stRadio, .stRadio *,
+.stInfo, .stInfo *,
+.element-container, .element-container *,
+div[data-testid="stMarkdownContainer"],
+div[data-testid="stMarkdownContainer"] * {
+    color: #2d3748 !important;
+}
+
+/* Info boxes specifically */
+div[data-baseweb="notification"] {
+    background-color: #e3f2fd !important;
+}
+
+div[data-baseweb="notification"] * {
+    color: #1565c0 !important;
+}
+
+/* Radio button labels */
+.stRadio label,
+.stRadio span,
+div[role="radiogroup"] label,
+div[role="radiogroup"] span {
+    color: #2d3748 !important;
+}
+
+/* Exception: Keep hero section white */
+.hero-section,
+.hero-section *,
+.assessment-card,
+.assessment-card *,
+.cta-section,
+.cta-section * {
+    color: white !important;
+}
+
     
     /* Light background */
     .stApp {
