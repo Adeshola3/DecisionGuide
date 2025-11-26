@@ -18,7 +18,7 @@
       }
     },
     "high_risk_characteristics": {
-      "text": "Does the processing involve any of the following high-risk characteristics?\n\n- Systematic monitoring (e.g. CCTV, tracking, monitoring behaviour)\n- Large-scale processing of personal data\n- Special category / highly sensitive data (health, biometrics, children, financial, criminal)\n- Vulnerable individuals or power imbalance (patients, employees, students, beneficiaries)\n- Use of new or intrusive technology (AI profiling, behavioural scoring, monitoring tools)",
+      "text": "Does the processing involve any of the following high-risk characteristics?\\n\\n- Systematic monitoring (e.g. CCTV, tracking, monitoring behaviour)\\n- Large-scale processing of personal data\\n- Special category / highly sensitive data (health, biometrics, children, financial, criminal)\\n- Vulnerable individuals or power imbalance (patients, employees, students, beneficiaries)\\n- Use of new or intrusive technology (AI profiling, behavioural scoring, monitoring tools)",
       "type": "choice",
       "options": {
         "Yes, one or more apply": {
@@ -31,7 +31,7 @@
       }
     },
     "borderline_context": {
-      "text": "Even if none of the high-risk characteristics clearly apply, is there any context that still makes this activity feel risky (e.g. reputational risk, complex data sharing, cross-border transfers)?",
+      "text": "Even if none of the high-risk characteristics clearly apply, is there any context that still makes this activity feel risky (for example reputational risk, complex data sharing, cross-border transfers)?",
       "type": "choice",
       "options": {
         "Yes, it still feels risky": {
@@ -45,4 +45,4 @@
       }
     }
   }
-}}
+}
