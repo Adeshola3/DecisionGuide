@@ -19,53 +19,67 @@ def load_trees():
             tree_id = data.get("id") or path.stem
             trees[tree_id] = data
         except Exception as e:
-            # In production you might log this instead
             print(f"Failed to load {path}: {e}")
     return trees
 
 
-def traverse_tree(tree, node_id, path_prefix=""):
+def traverse_tree_interactive(tree, node_id, answers, path_so_far):
     """
-    Recursively walk a decision tree defined in JSON.
-    Returns (decision_code, explanation, path_taken)
+    Interactively traverse the tree.
+    Shows one question at a time.
+    Returns (decision_code, explanation, full_path) when complete, or (None, None, path) if still in progress.
     """
     nodes = tree["nodes"]
     node = nodes[node_id]
-
+    
     node_label = node.get("text", "")
-    if path_prefix:
-        display_label = f"{path_prefix} → {node_label}"
-    else:
-        display_label = node_label
-
     node_type = node.get("type", "choice")
-
+    
     if node_type == "choice":
         options = list(node["options"].keys())
-        choice = st.radio(display_label, options, key=f"{tree['id']}_{node_id}")
-        st.write("")  # small spacing
-
-        selected_branch = node["options"][choice]
-        path_entry = f"{node_label} → {choice}"
-
-        # If this branch leads directly to a decision
+        
+        # Check if this question was already answered
+        if node_id in answers:
+            selected = answers[node_id]
+        else:
+            # Show the question
+            selected = st.radio(
+                node_label, 
+                options, 
+                key=f"{tree['id']}_{node_id}",
+                index=None  # No default selection
+            )
+            
+            if selected is None:
+                # User hasn't answered yet, stop here
+                return None, None, path_so_far
+            
+            # Save the answer
+            answers[node_id] = selected
+        
+        # Add to path
+        path_entry = f"{node_label} → {selected}"
+        new_path = path_so_far + [path_entry]
+        
+        selected_branch = node["options"][selected]
+        
+        # Check if this leads to a decision
         if "decision" in selected_branch:
             decision = selected_branch["decision"]
             explanation = selected_branch.get("explanation", "")
-            return decision, explanation, [path_entry]
-
-        # Otherwise, go to next node
+            return decision, explanation, new_path
+        
+        # Otherwise, continue to next node
         next_node = selected_branch["next"]
-        decision, explanation, sub_path = traverse_tree(tree, next_node, path_prefix="")
-        return decision, explanation, [path_entry] + sub_path
-
+        return traverse_tree_interactive(tree, next_node, answers, new_path)
+    
     elif node_type == "text":
-        st.markdown(display_label)
-        return None, None, [node_label]
-
+        st.markdown(node_label)
+        return None, None, path_so_far + [node_label]
+    
     else:
         st.warning(f"Unknown node type: {node_type}")
-        return None, None, []
+        return None, None, path_so_far
 
 
 def main():
@@ -95,29 +109,36 @@ def main():
     st.markdown("### Answer the questions")
 
     # Initialize session state for this tree
-    state_key = f"result_{selected_tree_id}"
-    if state_key not in st.session_state:
-        st.session_state[state_key] = None
+    answers_key = f"answers_{selected_tree_id}"
+    result_key = f"result_{selected_tree_id}"
+    
+    if answers_key not in st.session_state:
+        st.session_state[answers_key] = {}
+    
+    if result_key not in st.session_state:
+        st.session_state[result_key] = None
 
-    with st.form(key=f"form_{selected_tree_id}"):
-        decision, explanation, path = traverse_tree(tree, tree["root"])
-        submitted = st.form_submit_button("Run assessment")
+    # Traverse the tree
+    answers = st.session_state[answers_key]
+    decision, explanation, path = traverse_tree_interactive(
+        tree, 
+        tree["root"], 
+        answers, 
+        []
+    )
 
-    if submitted:
-        if decision is None:
-            st.warning("No decision reached. Please ensure all questions are answered.")
-            return
-        
-        # Store result in session state
-        st.session_state[state_key] = {
+    # If we have a decision, show it
+    if decision is not None:
+        st.session_state[result_key] = {
             "decision": decision,
             "explanation": explanation,
             "path": path
         }
 
-    # Display result if it exists in session state
-    if st.session_state[state_key] is not None:
-        result = st.session_state[state_key]
+    # Display result if available
+    if st.session_state[result_key] is not None:
+        st.markdown("---")
+        result = st.session_state[result_key]
         
         st.markdown("### Result")
         st.write(f"**Decision code:** {result['decision']}")
@@ -127,6 +148,12 @@ def main():
         st.markdown("### Path taken")
         for step in result['path']:
             st.write(f"- {step}")
+        
+        # Reset button
+        if st.button("Start over"):
+            st.session_state[answers_key] = {}
+            st.session_state[result_key] = None
+            st.rerun()
 
 
 if __name__ == "__main__":
