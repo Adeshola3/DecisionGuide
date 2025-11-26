@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Dark Elegant Design (Replicating the image)
+# Dark Elegant Design
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -146,11 +146,6 @@ st.markdown("""
         margin-bottom: 3rem;
     }
     
-    /* CTA Button */
-    .cta-button-container {
-        margin-top: 3rem;
-    }
-    
     /* Buttons */
     .stButton>button {
         background: #d4af76;
@@ -172,7 +167,7 @@ st.markdown("""
         box-shadow: 0 10px 30px rgba(212, 175, 118, 0.4);
     }
     
-    /* Assessment Grid for other pages */
+    /* Assessment Grid */
     .assessment-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -316,55 +311,50 @@ def load_trees():
 
 
 def show_landing_page():
-    """Dark elegant landing page matching the image"""
+    """Dark elegant landing page"""
     
-    st.markdown("""
-    <div class='hero-container'>
-        <div class='hero-content'>
-            <div class='hero-logo'>🎯</div>
-            
-            <h1 class='hero-title'>DecisionGuide</h1>
-            
-            <p class='hero-subtitle'>Open-Source Assessment For GRC Professionals</p>
-            
-            <div class='feature-badges'>
-                <div class='feature-badge'>
-                    <div class='feature-icon'>🌳</div>
-                    <div class='feature-text'>Structured Assessment Logic</div>
-                </div>
-                
-                <div class='feature-badge'>
-                    <div class='feature-icon'>📋</div>
-                    <div class='feature-text'>Research-Backed Frameworks</div>
-                </div>
-                
-                <div class='feature-badge'>
-                    <div class='feature-icon'>🛡️</div>
-                    <div class='feature-text'>Consistent, Defensible Decisions</div>
-                </div>
-            </div>
-            
-            <p class='hero-description'>
-                Make clearer GRC judgments with guided assessment flows 
-                (ISO 27001, GDPR, NIST CSF) based on industry research.
-            </p>
-            
-            <div class='cta-button-container'>
-    """, unsafe_allow_html=True)
-    
-    # Single centered button
+    # Use columns to center the button
     col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("Start an Assessment", key="main_cta", use_container_width=True):
-            # Show assessment selection instead of going to first assessment
-            st.session_state.show_selection = True
-            st.rerun()
     
-    st.markdown("""
+    with col2:
+        st.markdown("""
+        <div class='hero-container'>
+            <div class='hero-content'>
+                <div class='hero-logo'>🎯</div>
+                
+                <h1 class='hero-title'>DecisionGuide</h1>
+                
+                <p class='hero-subtitle'>Open-Source Assessment For GRC Professionals</p>
+                
+                <div class='feature-badges'>
+                    <div class='feature-badge'>
+                        <div class='feature-icon'>🌳</div>
+                        <div class='feature-text'>Structured Assessment Logic</div>
+                    </div>
+                    
+                    <div class='feature-badge'>
+                        <div class='feature-icon'>📋</div>
+                        <div class='feature-text'>Research-Backed Frameworks</div>
+                    </div>
+                    
+                    <div class='feature-badge'>
+                        <div class='feature-icon'>🛡️</div>
+                        <div class='feature-text'>Consistent, Defensible Decisions</div>
+                    </div>
+                </div>
+                
+                <p class='hero-description'>
+                    Make clearer GRC judgments with guided assessment flows 
+                    (ISO 27001, GDPR, NIST CSF) based on industry research.
+                </p>
             </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+        
+        # Button below the hero content
+        if st.button("Start an Assessment", key="main_cta", use_container_width=True):
+            st.session_state.show_selection = True
+            st.rerun()
 
 
 def show_assessment_selection():
@@ -383,26 +373,21 @@ def show_assessment_selection():
     """, unsafe_allow_html=True)
     
     trees = load_trees()
+    
+    # Use Streamlit columns with HTML cards
+    cols = st.columns(3)
     assessment_numbers = ["Assessment 01", "Assessment 02", "Assessment 03"]
     
-    # Assessment cards
-    cards_html = "<div class='assessment-grid'>"
-    for idx, (tree_id, tree_data) in enumerate(trees.items()):
-        cards_html += f"""
-        <div class='assessment-card'>
-            <div class='assessment-number'>{assessment_numbers[idx] if idx < len(assessment_numbers) else f"Assessment 0{idx+1}"}</div>
-            <h3 class='assessment-title'>{tree_data.get('title', 'Assessment')}</h3>
-            <p class='assessment-description'>{tree_data.get('description', '')}</p>
-        </div>
-        """
-    cards_html += "</div>"
-    
-    st.markdown(cards_html, unsafe_allow_html=True)
-    
-    # Buttons
-    cols = st.columns(len(trees))
     for idx, (tree_id, tree_data) in enumerate(trees.items()):
         with cols[idx % 3]:
+            st.markdown(f"""
+            <div class='assessment-card'>
+                <div class='assessment-number'>{assessment_numbers[idx]}</div>
+                <h3 class='assessment-title'>{tree_data.get('title', 'Assessment')}</h3>
+                <p class='assessment-description'>{tree_data.get('description', '')}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
             if st.button(f"Begin Assessment", key=f"start_{tree_id}", use_container_width=True):
                 st.session_state.selected_tree = tree_id
                 st.session_state.show_landing = False
