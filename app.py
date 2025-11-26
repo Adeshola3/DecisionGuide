@@ -25,10 +25,9 @@ def load_trees():
     return trees
 
 
-def count_questions_in_path(tree, node_id, visited=None):
+def count_max_depth(tree, node_id, visited=None):
     """
-    Count total questions in a decision path.
-    This gives us an estimate of progress.
+    Count maximum depth (number of questions) from current node to any outcome.
     """
     if visited is None:
         visited = set()
@@ -37,30 +36,32 @@ def count_questions_in_path(tree, node_id, visited=None):
         return 0
     
     visited.add(node_id)
-    nodes = tree["nodes"]
+    nodes = tree.get("nodes", {})
     
     if node_id not in nodes:
         return 0
     
     node = nodes[node_id]
+    node_type = node.get("type", "choice")
     
-    if node.get("type") != "choice":
+    if node_type != "choice":
         return 0
     
-    # Count this question
-    count = 1
+    # This is a question, count it
+    max_depth = 0
     
-    # Check all branches
-    max_additional = 0
-    for option_data in node.get("options", {}).values():
+    # Check all possible branches
+    for option_key, option_data in node.get("options", {}).items():
         if "next" in option_data:
-            additional = count_questions_in_path(tree, option_data["next"], visited.copy())
-            max_additional = max(max_additional, additional)
+            # This leads to another question
+            branch_depth = count_max_depth(tree, option_data["next"], visited.copy())
+            max_depth = max(max_depth, branch_depth)
+        # else: this leads directly to an outcome (terminal node)
     
-    return count + max_additional
+    return 1 + max_depth
 
 
-def traverse_tree_interactive(tree, node_id, answers, path_so_far, question_count):
+def traverse_tree_interactive(tree, node_id, answers, path_so_far):
     """
     Interactively traverse the tree.
     Shows one question at a time with progress indicator.
@@ -75,24 +76,21 @@ def traverse_tree_interactive(tree, node_id, answers, path_so_far, question_coun
     if node_type == "choice":
         # Calculate progress
         current_question = len(answers) + 1
-        total_questions = count_questions_in_path(tree, tree["root"])
+        # Estimate remaining questions from current position
+        remaining = count_max_depth(tree, node_id)
+        estimated_total = current_question + remaining - 1  # -1 because current is counted in remaining
         
-        # Show BIG VISIBLE progress indicator
-        if total_questions > 1:
-            progress_percentage = min((current_question / total_questions) * 100, 100)
-            
-            # Progress header
-            st.markdown(f"### 📊 Progress: Question {current_question} of {total_questions}")
-            
-            # Big progress bar
-            st.progress(progress_percentage / 100)
-            
-            # Percentage display
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                st.markdown(f"<h3 style='text-align: center;'>{int(progress_percentage)}% Complete</h3>", unsafe_allow_html=True)
-            
-            st.markdown("---")
+        # Show progress (ALWAYS, no conditions)
+        if estimated_total >= current_question:
+            progress_percentage = (current_question / estimated_total) * 100
+        else:
+            progress_percentage = 100
+        
+        # Progress display
+        st.info(f"📊 Question {current_question} of ~{estimated_total}")
+        st.progress(min(progress_percentage / 100, 1.0))
+        st.caption(f"{int(min(progress_percentage, 100))}% complete")
+        st.markdown("---")
         
         options = list(node["options"].keys())
         
@@ -129,7 +127,7 @@ def traverse_tree_interactive(tree, node_id, answers, path_so_far, question_coun
         
         # Otherwise, continue to next node
         next_node = selected_branch["next"]
-        return traverse_tree_interactive(tree, next_node, answers, new_path, question_count + 1)
+        return traverse_tree_interactive(tree, next_node, answers, new_path)
     
     elif node_type == "text":
         st.markdown(node_label)
@@ -181,8 +179,7 @@ def main():
         tree, 
         tree["root"], 
         answers, 
-        [],
-        0
+        []
     )
 
     # If we have a decision, show it
@@ -195,10 +192,9 @@ def main():
 
     # Display result if available
     if st.session_state[result_key] is not None:
-        # Show 100% completion with celebration
-        st.markdown("### 📊 Progress: Assessment Complete!")
+        # Show 100% completion
+        st.success("✅ Assessment Complete!")
         st.progress(1.0)
-        st.success("✅ 100% Complete!")
         
         st.markdown("---")
         
