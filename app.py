@@ -805,7 +805,7 @@ def show_landing_page():
             <div class='feature-icon-wrapper'>🔍</div>
             <h3 class='feature-title'>Crystal Clear Logic</h3>
             <p class='feature-description'>
-                Every decision is traced step-by-step. No black boxes, no mysteries—just transparent, 
+                Every decision is traced step-by-step. No black boxes, no mysteries; just transparent, 
                 defensible reasoning you can confidently present to stakeholders.
             </p>
         </div>
