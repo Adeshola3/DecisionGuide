@@ -13,45 +13,53 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for professional styling
+# Custom CSS for the NEW "Midnight Compliance" styling
+# Color Palette:
+# Background: #1a1d2d (Deep Charcoal/Navy)
+# Primary Text: #f0f2f6 (Light Gray/White)
+# Accent Color (Teal): #00cc99
+# Secondary Accent (Lighter Teal): #00ffc6
 st.markdown("""
 <style>
     /* Hide Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Light background */
+    /* Dark background for the main app */
     .stApp {
-        background: #fafafa;
+        background: #1a1d2d;
     }
     
-    /* Make sure all text is visible */
+    /* Ensure all text is visible on the dark background */
     .stMarkdown, .stMarkdown p, h1, h2, h3, h4, h5, h6 {
-        color: #2d3748 !important;
+        color: #f0f2f6 !important; /* Light text for readability */
     }
     
-    .stRadio label, .stRadio span {
-        color: #2d3748 !important;
+    /* Input elements and labels */
+    .stRadio label, .stRadio span, .stTextInput label, .stSelectbox label {
+        color: #f0f2f6 !important;
         font-weight: 500 !important;
     }
     
+    /* Notification/Info boxes */
     div[data-baseweb="notification"] * {
-        color: #1565c0 !important;
+        color: #00cc99 !important; /* Teal accent */
     }
     
-    /* Hero section styling - BIG CENTERED */
+    /* Hero section styling - Clean and sharp */
     .hero-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #232738; /* Slightly lighter dark background */
         padding: 6rem 2rem;
-        border-radius: 20px;
+        border-radius: 15px;
         text-align: center;
-        color: white;
+        color: #f0f2f6;
         margin-bottom: 3rem;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.4);
         min-height: 80vh;
         display: flex;
         align-items: center;
         justify-content: center;
+        border: 1px solid #00cc9933; /* Subtle accent border */
     }
     
     .hero-content {
@@ -62,100 +70,103 @@ st.markdown("""
     .hero-logo {
         font-size: 8rem;
         margin-bottom: 2rem;
-        filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+        color: #00cc99; /* Teal logo */
+        filter: drop-shadow(0 0 10px rgba(0,204,153,0.5));
     }
     
     .hero-title {
         font-size: 5rem;
-        font-weight: 900;
-        margin-bottom: 2rem;
-        color: white;
-        letter-spacing: -2px;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: #f0f2f6;
+        letter-spacing: -3px;
     }
     
     .hero-subtitle {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         margin-bottom: 2rem;
-        opacity: 0.95;
-        color: white;
+        color: #00ffc6; /* Lighter teal for sub-header */
         line-height: 1.6;
-        font-weight: 400;
     }
     
     .hero-description {
         font-size: 1.15rem;
         max-width: 800px;
         margin: 0 auto;
-        opacity: 0.9;
-        color: white;
+        opacity: 0.8;
+        color: #cccccc;
         line-height: 1.8;
-        font-weight: 400;
     }
     
     /* Feature cards */
     .feature-card {
-        background: white;
+        background: #232738;
         padding: 2rem;
-        border-radius: 15px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.4);
         height: 100%;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-left: 5px solid #00cc99; /* Strong accent line */
     }
     
     .feature-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
     
     .feature-icon {
         font-size: 2.5rem;
         margin-bottom: 1rem;
+        color: #00ffc6;
     }
     
     .feature-title {
         font-size: 1.3rem;
         font-weight: 700;
-        color: #667eea;
+        color: #f0f2f6;
         margin-bottom: 0.5rem;
     }
     
     .feature-text {
-        color: #666;
+        color: #cccccc;
         font-size: 1rem;
         line-height: 1.6;
     }
     
     /* Assessment cards */
     .assessment-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* Using gradients for variety but keeping the dark tone */
+        background: linear-gradient(135deg, #232738 0%, #1a1d2d 100%); 
         padding: 2rem;
-        border-radius: 15px;
-        color: white;
+        border-radius: 10px;
+        color: #f0f2f6;
         height: 250px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
         transition: transform 0.3s ease;
         margin-bottom: 1rem;
+        border: 1px solid #00cc99;
     }
     
     .assessment-card:hover {
         transform: translateY(-5px);
+        background: #2a3148;
     }
     
     .assessment-title {
         font-size: 1.5rem;
         font-weight: 700;
         margin-bottom: 1rem;
-        color: white;
+        color: #00ffc6; /* Teal accent title */
     }
     
     .assessment-description {
         font-size: 0.95rem;
-        opacity: 0.9;
+        opacity: 0.8;
         flex-grow: 1;
-        color: white;
+        color: #cccccc;
     }
     
     /* Section styling */
@@ -163,163 +174,156 @@ st.markdown("""
         font-size: 2.5rem;
         font-weight: 700;
         text-align: center;
-        margin: 3rem 0 2rem 0;
-        color: #2d3748;
+        margin: 3rem 0 0.5rem 0;
+        color: #f0f2f6;
     }
     
     .section-subtitle {
         text-align: center;
-        color: #666;
-        font-size: 1.1rem;
+        color: #00cc99; /* Accent for subtitle */
+        font-size: 1.2rem;
         margin-bottom: 3rem;
     }
     
     /* Use case boxes */
     .use-case-box {
-        background: white;
+        background: #232738;
         padding: 1.5rem;
-        border-radius: 10px;
-        border-left: 4px solid #667eea;
+        border-radius: 8px;
+        border-left: 4px solid #00ffc6;
         margin-bottom: 1rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
     
     .use-case-title {
         font-size: 1.2rem;
         font-weight: 700;
-        color: #667eea;
+        color: #00ffc6;
         margin-bottom: 0.5rem;
     }
     
-    .use-case-box ul {
-        color: #666;
+    .use-case-box ul, .use-case-box li {
+        color: #cccccc;
+        list-style-type: '👉 '; /* Custom bullet */
     }
     
     .use-case-box li {
-        color: #666;
         margin-bottom: 0.5rem;
     }
     
     /* CTA section */
     .cta-section {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: #00cc99; /* Solid accent background */
         padding: 3rem;
-        border-radius: 20px;
+        border-radius: 15px;
         text-align: center;
-        color: white;
+        color: #1a1d2d;
         margin: 3rem 0;
+        box-shadow: 0 5px 20px rgba(0,204,153,0.5);
     }
     
     .cta-title {
-        font-size: 2rem;
-        font-weight: 700;
+        font-size: 2.5rem;
+        font-weight: 800;
         margin-bottom: 1rem;
-        color: white;
+        color: #1a1d2d; /* Dark text on bright background */
     }
     
     /* Footer */
     .custom-footer {
         text-align: center;
         padding: 2rem;
-        color: #666;
+        color: #cccccc;
         margin-top: 3rem;
-        background: white;
+        background: #232738;
         border-radius: 15px;
+        border-top: 3px solid #00cc99;
     }
     
     .custom-footer strong {
-        color: #2d3748;
+        color: #f0f2f6;
     }
     
     .custom-footer a {
-        color: #667eea;
+        color: #00ffc6;
         text-decoration: none;
         font-weight: 600;
     }
     
     .custom-footer a:hover {
-        color: #764ba2;
+        color: #00cc99;
+        text-decoration: underline;
     }
     
-    /* Buttons */
+    /* Buttons - Primary Action */
     .stButton>button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: #00cc99;
+        color: #1a1d2d;
         border: none;
         padding: 0.75rem 2rem;
         font-size: 1rem;
-        font-weight: 600;
-        border-radius: 10px;
+        font-weight: 700;
+        border-radius: 8px;
         transition: all 0.3s ease;
     }
     
     .stButton>button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 5px 15px rgba(0, 204, 153, 0.5);
+        background: #00ffc6;
     }
     
-    /* Download Buttons */
+    /* Download Buttons - Secondary Action */
     .stDownloadButton>button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
+        background: #232738;
+        color: #00cc99;
+        border: 2px solid #00cc99;
         padding: 0.75rem 2rem;
         font-size: 0.9rem;
         font-weight: 600;
-        border-radius: 10px;
+        border-radius: 8px;
         transition: all 0.3s ease;
     }
     
     .stDownloadButton>button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 5px 15px rgba(0, 204, 153, 0.2);
+        color: #00ffc6;
+        border-color: #00ffc6;
     }
     
-    /* Responsive Design */
+    /* Reroute the Radio Buttons to look better on dark theme */
+    div[data-testid="stRadio"] label {
+        background: #232738;
+        padding: 10px 15px;
+        border-radius: 5px;
+        border: 1px solid #3d4560;
+        margin-bottom: 5px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    div[data-testid="stRadio"] label:has(input:checked) {
+        background: #00cc991a; /* Very light teal shade */
+        border-color: #00ffc6;
+        box-shadow: 0 0 10px rgba(0,204,153,0.3);
+    }
+    
+    /* Responsive Design (Keep for mobile) */
     @media (max-width: 768px) {
-        .hero-logo {
-            font-size: 5rem;
-        }
-        
-        .hero-title {
-            font-size: 3rem;
-        }
-        
-        .hero-subtitle {
-            font-size: 1.2rem;
-        }
-        
-        .hero-description {
-            font-size: 1rem;
-        }
-        
-        .section-title {
-            font-size: 2rem;
-        }
-        
-        .feature-card,
-        .assessment-card,
-        .use-case-box {
-            margin-bottom: 1.5rem;
-        }
+        .hero-logo { font-size: 5rem; }
+        .hero-title { font-size: 3rem; }
+        .hero-subtitle { font-size: 1.2rem; }
+        .hero-description { font-size: 1rem; }
+        .section-title { font-size: 2rem; }
+        .feature-card, .assessment-card, .use-case-box { margin-bottom: 1.5rem; }
     }
     
     @media (max-width: 480px) {
-        .hero-logo {
-            font-size: 4rem;
-        }
-        
-        .hero-title {
-            font-size: 2.2rem;
-        }
-        
-        .hero-subtitle {
-            font-size: 1rem;
-        }
-        
-        .hero-description {
-            font-size: 0.9rem;
-        }
+        .hero-logo { font-size: 4rem; }
+        .hero-title { font-size: 2.2rem; }
+        .hero-subtitle { font-size: 1rem; }
+        .hero-description { font-size: 0.9rem; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -342,9 +346,9 @@ def load_trees():
 
 
 def show_landing_page():
-    """Display the colorful professional landing page"""
+    """Display the authoritative "Midnight Compliance" landing page"""
     
-    # Hero Section - BIG CENTERED WITH BOLD TITLE
+    # Hero Section - BIG CENTERED
     st.markdown("""
     <div class='hero-section'>
         <div class='hero-content'>
@@ -409,19 +413,21 @@ def show_landing_page():
     
     trees = load_trees()
     
-    # Create gradient colors for cards
-    gradients = [
-        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-        "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-    ]
-    
+    # Use consistent card styling with the new dark theme
     cols = st.columns(min(len(trees), 3))
+    
+    # Define a set of different gradients for variety, all within the dark/teal family
+    dark_gradients = [
+        "linear-gradient(135deg, #1a1d2d 0%, #2a3148 100%)",
+        "linear-gradient(135deg, #2a3148 0%, #1a1d2d 100%)",
+        "linear-gradient(135deg, #1f2334 0%, #282d3e 100%)",
+    ]
     
     for idx, (tree_id, tree_data) in enumerate(trees.items()):
         with cols[idx % 3]:
-            gradient = gradients[idx % len(gradients)]
+            gradient = dark_gradients[idx % len(dark_gradients)]
             
+            # Applying the assessment-card style from the new CSS
             st.markdown(f"""
             <div class='assessment-card' style='background: {gradient};'>
                 <div>
@@ -490,7 +496,7 @@ def show_landing_page():
     st.markdown("""
     <div class='cta-section'>
         <div class='cta-title'>Ready to Make Better Decisions?</div>
-        <p style='font-size: 1.1rem; margin-bottom: 1.5rem; color: white;'>
+        <p style='font-size: 1.1rem; margin-bottom: 1.5rem; color: #1a1d2d;'>
             Join GRC professionals using DecisionGuide for consistent, defensible assessments
         </p>
     </div>
@@ -502,7 +508,7 @@ def show_landing_page():
         <p style='font-size: 1.1rem; margin-bottom: 0.5rem;'>
             <strong>DecisionGuide: Making structured, smart decisions—one at a time.</strong>
         </p>
-        <p style='margin-bottom: 1rem; color: #666;'>
+        <p style='margin-bottom: 1rem; color: #cccccc;'>
             Built with empathy for students and professionals who need clarity in complex assessments.
         </p>
         <p>
@@ -514,7 +520,7 @@ def show_landing_page():
                 💬 Contribute
             </a>
         </p>
-        <p style='margin-top: 1.5rem; font-size: 0.9rem; color: #999;'>
+        <p style='margin-top: 1.5rem; font-size: 0.9rem; color: #666;'>
             Open source • MIT License • Made with 💙
         </p>
     </div>
@@ -531,7 +537,7 @@ def traverse_tree_interactive(tree, node_id, answers, path_so_far):
     
     if node_type == "choice":
         current_question = len(answers) + 1
-        st.info(f"📊 Question {current_question}")
+        st.markdown(f"<div style='color: #00ffc6; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;'>📊 Question {current_question}</div>", unsafe_allow_html=True)
         st.markdown("---")
         
         options = list(node["options"].keys())
@@ -539,6 +545,7 @@ def traverse_tree_interactive(tree, node_id, answers, path_so_far):
         if node_id in answers:
             selected = answers[node_id]
         else:
+            # Note: The custom radio button styling is applied globally via CSS
             selected = st.radio(
                 node_label, 
                 options, 
@@ -609,6 +616,7 @@ def show_assessment_page():
         st.session_state[result_key] = None
 
     answers = st.session_state[answers_key]
+    # Pass path_so_far=[] to the initial call
     decision, explanation, path = traverse_tree_interactive(
         tree, 
         tree["root"], 
@@ -630,17 +638,22 @@ def show_assessment_page():
         
         result = st.session_state[result_key]
         
-        st.markdown("### Result")
-        st.write(f"**Decision code:** {result['decision']}")
+        # Use custom markdown for result header
+        st.markdown("<h3 style='color: #00ffc6;'>Result</h3>", unsafe_allow_html=True)
+        st.markdown(f"**Decision code:** `{result['decision']}`")
         if result['explanation']:
             st.write(result['explanation'])
 
-        st.markdown("### Path taken")
+        # Use custom markdown for path header
+        st.markdown("<h3 style='color: #00ffc6;'>Path Taken (Audit Trail)</h3>", unsafe_allow_html=True)
+        # Use a bullet list with a custom icon for the path
+        st.markdown("<div style='background: #232738; padding: 15px; border-radius: 8px;'>", unsafe_allow_html=True)
         for step in result['path']:
-            st.write(f"- {step}")
+            st.markdown(f"<p style='margin-bottom: 5px; color: #cccccc;'>&nbsp;&nbsp;➡️ {step}</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
         
         st.markdown("---")
-        st.markdown("### Export Options")
+        st.markdown("<h3 style='color: #00ffc6;'>Export Options</h3>", unsafe_allow_html=True)
         
         col1, col2, col3, col4 = st.columns(4)
         
