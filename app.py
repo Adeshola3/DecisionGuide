@@ -1468,5 +1468,5 @@ else:
     show_assessment_page()
 ```
 
-if **name** == “**main**”:
-main()
+if __name__ == "__main__":
+    main()
