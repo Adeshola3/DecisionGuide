@@ -4,6 +4,7 @@ from pathlib import Path
 import streamlit as st
 
 from utils.export import export_to_pdf, export_to_json, export_to_text, get_filename
+from risk_scoring import RiskScorer, display_current_risk_score, display_final_risk_report  # ← ADDED
 
 
 st.set_page_config(
@@ -1021,6 +1022,23 @@ def show_assessment_page():
     
     tree = trees[selected_tree_id]
     
+    # ============================================
+    # RISK SCORING INITIALIZATION - ADDED HERE
+    # ============================================
+    scoring_enabled = tree.get('scoring', {}).get('enabled', False)
+    if scoring_enabled:
+        scorer = RiskScorer(tree)
+        # Get current answers for this assessment
+        answers_key = f"answers_{selected_tree_id}"
+        if answers_key in st.session_state:
+            # Convert answers dict to list format for scorer
+            answer_list = [
+                {'node_id': node_id, 'choice': choice, 'question': tree['nodes'][node_id]['text']}
+                for node_id, choice in st.session_state[answers_key].items()
+            ]
+            display_current_risk_score(scorer, answer_list)
+    # ============================================
+    
     # Assessment header
     st.markdown(f"""
     <div style='text-align: center; margin-bottom: 3rem;'>
@@ -1063,6 +1081,18 @@ def show_assessment_page():
         st.markdown("<br>", unsafe_allow_html=True)
         
         result = st.session_state[result_key]
+        
+        # ============================================
+        # RISK SCORING FINAL REPORT - ADDED HERE
+        # ============================================
+        if scoring_enabled:
+            # Convert answers dict to list format for scorer
+            answer_list = [
+                {'node_id': node_id, 'choice': choice, 'question': tree['nodes'][node_id]['text']}
+                for node_id, choice in answers.items()
+            ]
+            display_final_risk_report(scorer, answer_list)
+        # ============================================
         
         # Result Display
         st.markdown(f"""
