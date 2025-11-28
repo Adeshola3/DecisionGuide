@@ -96,9 +96,6 @@
       "explanation": "Vendor lacks adequate security controls for elevated-risk data. High tier.",
       "risk_weight": 30
     }
+      }
+    }
   }
-}
-```
-
-}
-}
