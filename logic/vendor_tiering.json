@@ -31,71 +31,67 @@
 }
 }
 },
-
-```
-"criticality_low": {
-  "text": "Is the vendor involved in a business-critical function?",
-  "type": "choice",
-  "options": {
-    "No": {
-      "decision": "LOW_TIER",
-      "explanation": "Vendor handles no personal/sensitive data and is not involved in a critical function. Low inherent risk.",
-      "risk_weight": 0
-    },
-    "Yes": {
-      "decision": "MEDIUM_TIER",
-      "explanation": "Vendor handles no sensitive data perbut supports a business-critical function. Moderate inherent risk.",
-      "risk_weight": 30
-    }
-  }
+“criticality_low”: {
+“text”: “Is the vendor involved in a business-critical function?”,
+“type”: “choice”,
+“options”: {
+“No”: {
+“decision”: “LOW_TIER”,
+“explanation”: “Vendor handles no personal/sensitive data and is not involved in a critical function. Low inherent risk.”,
+“risk_weight”: 0
 },
-
-"criticality_medium": {
-  "text": "Does the processing involve large-scale personal data?",
-  "type": "choice",
-  "options": {
-    "No": {
-      "decision": "MEDIUM_TIER",
-      "explanation": "Vendor processes personal data on a limited scale. Medium inherent risk.",
-      "risk_weight": 10
-    },
-    "Yes": {
-      "next": "security_controls",
-      "risk_weight": 25
-    }
-  }
+“Yes”: {
+“decision”: “MEDIUM_TIER”,
+“explanation”: “Vendor handles no sensitive data but supports a business-critical function. Moderate inherent risk.”,
+“risk_weight”: 30
+}
+}
 },
-
-"criticality_high": {
-  "text": "Does the processing include special category data or legally regulated data?",
-  "type": "choice",
-  "options": {
-    "No": {
-      "next": "security_controls",
-      "risk_weight": 15
-    },
-    "Yes": {
-      "decision": "HIGH_TIER",
-      "explanation": "Vendor handles highly sensitive or regulated data. Automatically high risk.",
-      "risk_weight": 35
-    }
-  }
+“criticality_medium”: {
+“text”: “Does the processing involve large-scale personal data?”,
+“type”: “choice”,
+“options”: {
+“No”: {
+“decision”: “MEDIUM_TIER”,
+“explanation”: “Vendor processes personal data on a limited scale. Medium inherent risk.”,
+“risk_weight”: 10
 },
-
-"security_controls": {
-  "text": "Does the vendor have formal security controls (ISO 27001/SOC2/strong internal policies)?",
-  "type": "choice",
-  "options": {
-    "Yes": {
-      "decision": "MEDIUM_TIER",
-      "explanation": "Vendor handles elevated-risk data but has strong security measures. Medium tier with monitoring.",
-      "risk_weight": -15
-    },
-    "No": {
-      "decision": "HIGH_TIER",
-      "explanation": "Vendor lacks adequate security controls for elevated-risk data. High tier.",
-      "risk_weight": 30
-    }
-      }
-    }
-  }
+“Yes”: {
+“next”: “security_controls”,
+“risk_weight”: 25
+}
+}
+},
+“criticality_high”: {
+“text”: “Does the processing include special category data or legally regulated data?”,
+“type”: “choice”,
+“options”: {
+“No”: {
+“next”: “security_controls”,
+“risk_weight”: 15
+},
+“Yes”: {
+“decision”: “HIGH_TIER”,
+“explanation”: “Vendor handles highly sensitive or regulated data. Automatically high risk.”,
+“risk_weight”: 35
+}
+}
+},
+“security_controls”: {
+“text”: “Does the vendor have formal security controls (ISO 27001/SOC2/strong internal policies)?”,
+“type”: “choice”,
+“options”: {
+“Yes”: {
+“decision”: “MEDIUM_TIER”,
+“explanation”: “Vendor handles elevated-risk data but has strong security measures. Medium tier with monitoring.”,
+“risk_weight”: -15
+},
+“No”: {
+“decision”: “HIGH_TIER”,
+“explanation”: “Vendor lacks adequate security controls for elevated-risk data. High tier.”,
+“risk_weight”: 30
+}
+}
+}
+}
+}
