@@ -4,13 +4,13 @@ from pathlib import Path
 import streamlit as st
 
 from utils.export import export_to_pdf, export_to_json, export_to_text, get_filename
-from risk_scoring import RiskScorer, display_current_risk_score, display_final_risk_report  # ← ADDED
 
 
 st.set_page_config(
     page_title="DecisionGuide",
     page_icon="🎯",
     layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 # Premium, cutting-edge CSS design
@@ -773,7 +773,7 @@ def show_landing_page():
     st.markdown("""
     <div class='hero-wrapper'>
         <div class='hero-content'>
-            <div class='hero-badge'>🎯 Open Source GRC Assessment Tool</div>
+            <div class='hero-badge'>🎯 Open Source GRC Framework</div>
             <h1 class='hero-title'>DecisionGuide</h1>
             <p class='hero-subtitle'>
                 Make consistent, defensible decisions through structured logic flows.<br>
@@ -1021,15 +1021,6 @@ def show_assessment_page():
     
     tree = trees[selected_tree_id]
     
-    # ============================================
-    # RISK SCORING INITIALIZATION - ADDED HERE
-    # ============================================
-    scoring_enabled = tree.get('scoring', {}).get('enabled', False)
-    scorer = none
-    if scoring_enabled:
-        scorer = RiskScorer(tree)
-    # ============================================
-    
     # Assessment header
     st.markdown(f"""
     <div style='text-align: center; margin-bottom: 3rem;'>
@@ -1050,24 +1041,14 @@ def show_assessment_page():
     
     if result_key not in st.session_state:
         st.session_state[result_key] = None
+
     answers = st.session_state[answers_key]
-    
-    # Display current risk score after each answer
-    if scoring_enabled and scorer and answers:
-        answer_list = [
-            {'node_id': node_id, 'choice': choice, 'question': tree['nodes'][node_id].get('text', '')}
-            for node_id, choice in answers.items()
-        ]
-        display_current_risk_score(scorer, answer_list)
-    
     decision, explanation, path = traverse_tree_interactive(
         tree, 
         tree["root"], 
         answers, 
         []
     )
-
-
 
     if decision is not None:
         st.session_state[result_key] = {
@@ -1082,18 +1063,6 @@ def show_assessment_page():
         st.markdown("<br>", unsafe_allow_html=True)
         
         result = st.session_state[result_key]
-        
-        # ============================================
-        # RISK SCORING FINAL REPORT - ADDED HERE
-        # ============================================
-        if scoring_enabled:
-            # Convert answers dict to list format for scorer
-            answer_list = [
-                {'node_id': node_id, 'choice': choice, 'question': tree['nodes'][node_id]['text']}
-                for node_id, choice in answers.items()
-            ]
-            display_final_risk_report(scorer, answer_list)
-        # ============================================
         
         # Result Display
         st.markdown(f"""
@@ -1238,13 +1207,4 @@ def main():
 
 
 if __name__ == "__main__":
-    
-if __name__ == "__main__":
-    # Test if risk_scoring imports correctly
-    try:
-        from risk_scoring import RiskScorer
-        print("✅ RiskScorer imported successfully!")
-    except Exception as e:
-        print(f"❌ Error importing RiskScorer: {e}")
-    
     main()
