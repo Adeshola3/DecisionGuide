@@ -1,95 +1,28 @@
 {
-  "id": "vendor_risk_tiering_v1",
-  "title": "Vendor Risk Tiering",
-  "description": "A simple logic-based assessment to determine whether a vendor should be classified as Low, Medium, or High risk.",
-  "root": "data_type",
-  "scoring": {
-    "enabled": true,
-    "thresholds": {
-      "low": 0,
-      "medium": 35,
-      "high": 65,
-      "critical": 90
-    }
-  },
+  "id": "vendor_requirements_guide",
+  "title": "Vendor Requirements Guide",
+  "description": "Select the type of vendor you are sourcing to see the required tier and what you should request before onboarding.",
+  "root": "q_vendor_type",
   "nodes": {
-    "data_type": {
-      "text": "What type of data will the vendor process or access?",
+    "q_vendor_type": {
       "type": "choice",
+      "text": "What type of vendor are you sourcing?\nChoose the option that best matches the vendor's role.",
       "options": {
-        "No personal or sensitive data": {
-          "next": "criticality_low",
-          "risk_weight": 5
+        "No data and no system access (e.g. stationery, catering, cleaning, uniforms)": {
+          "decision": "TIER_3_LOW",
+          "explanation": "Tier: 🟢 Tier 3 – Low Risk\n\nThe vendor does not access systems and does not process your data.\n\nWhat to request:\n- Basic contract\n- Pricing details\n- Delivery or service terms\n\nNot required:\n- No DPA\n- No SLA\n- No security questionnaires\n- No SOC 2/ISO evidence\n\nExamples:\n- Stationery supplier\n- Catering services\n- Cleaning company\n- Uniform suppliers\n- Furniture providers"
         },
-        "Personal data": {
-          "next": "criticality_medium",
-          "risk_weight": 25
+        "Low/internal data only (e.g. training tools, survey apps, booking tools)": {
+          "decision": "TIER_2_MEDIUM",
+          "explanation": "Tier: 🟡 Tier 2 – Medium Risk\n\nThe vendor handles low-sensitivity or internal-only data.\n\nWhat to request:\n- Light SLA (response times)\n- High-level security policy\n- Data storage region\n- Data retention period\n- DPA only if personal data is involved\n\nNot required:\n- No SOC 2/ISO mandatory\n- No heavy questionnaires\n- No DR/BCM evidence\n\nExamples:\n- Staff learning platforms\n- Internal survey tools\n- Department-only scheduling tools\n- Basic SaaS utilities used internally"
         },
-        "Sensitive or regulated data (health, financial, minors, biometrics)": {
-          "next": "criticality_high",
-          "risk_weight": 40
-        }
-      }
-    },
-    "criticality_low": {
-      "text": "Is the vendor involved in a business-critical function?",
-      "type": "choice",
-      "options": {
-        "No": {
-          "decision": "LOW_TIER",
-          "explanation": "Vendor handles no personal/sensitive data and is not involved in a critical function. Low inherent risk.",
-          "risk_weight": 0
+        "Personal data or integration (e.g. HR, CRM, payroll, SaaS logins, API services)": {
+          "decision": "TIER_1_HIGH",
+          "explanation": "Tier: 🟠 Tier 1 – High Risk\n\nThe vendor processes personal data and/or integrates with your systems.\n\nWhat to request:\n- DPA\n- Sub-processor list\n- SLA (uptime + support)\n- ISO 27001, SOC 2, or pen test\n- MFA and access control summary\n- Data flow diagram\n- 48-hour incident notification\n- Exit and deletion plan\n\nExamples:\n- HR systems\n- CRM platforms\n- Payroll/timekeeping tools\n- SaaS with user accounts\n- API providers sending or receiving your data"
         },
-        "Yes": {
-          "decision": "MEDIUM_TIER",
-          "explanation": "Vendor handles no sensitive data but supports a business-critical function. Moderate inherent risk.",
-          "risk_weight": 30
-        }
-      }
-    },
-    "criticality_medium": {
-      "text": "Does the processing involve large-scale personal data?",
-      "type": "choice",
-      "options": {
-        "No": {
-          "decision": "MEDIUM_TIER",
-          "explanation": "Vendor processes personal data on a limited scale. Medium inherent risk.",
-          "risk_weight": 10
-        },
-        "Yes": {
-          "next": "security_controls",
-          "risk_weight": 25
-        }
-      }
-    },
-    "criticality_high": {
-      "text": "Does the processing include special category data or legally regulated data?",
-      "type": "choice",
-      "options": {
-        "No": {
-          "next": "security_controls",
-          "risk_weight": 15
-        },
-        "Yes": {
-          "decision": "HIGH_TIER",
-          "explanation": "Vendor handles highly sensitive or regulated data. Automatically high risk.",
-          "risk_weight": 35
-        }
-      }
-    },
-    "security_controls": {
-      "text": "Does the vendor have formal security controls (ISO 27001/SOC2/strong internal policies)?",
-      "type": "choice",
-      "options": {
-        "Yes": {
-          "decision": "MEDIUM_TIER",
-          "explanation": "Vendor handles elevated-risk data but has strong security measures. Medium tier with monitoring.",
-          "risk_weight": -15
-        },
-        "No": {
-          "decision": "HIGH_TIER",
-          "explanation": "Vendor lacks adequate security controls for elevated-risk data. High tier.",
-          "risk_weight": 30
+        "Critical/high-impact service (e.g. cloud hosting, identity providers, core platforms)": {
+          "decision": "TIER_0_CRITICAL",
+          "explanation": "Tier: 🔴 Tier 0 – Critical\n\nThe vendor supports critical services or has privileged access.\n\nWhat to request:\n- DPA (if personal data)\n- Strong contract with security clauses\n- SOC 2 Type II and/or ISO 27001\n- Pen test summary\n- Security architecture overview\n- MFA and privileged access controls\n- SLA with uptime guarantee\n- BCM/DR documentation + test evidence\n- 24-hour incident notification\n- Detailed exit plan and data deletion confirmation\n\nExamples:\n- AWS, Azure, GCP\n- Enterprise-wide identity provider (Okta, Entra)\n- Core clinical or business systems\n- Payment processors\n- Managed service providers with admin access"
         }
       }
     }
