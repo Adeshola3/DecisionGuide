@@ -1,6 +1,6 @@
 # DecisionGuide
 
-**Open-source assessment framework for GRC professionals**
+**Open-source assessment tool for GRC professionals**
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://decisionguide.streamlit.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
