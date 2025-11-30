@@ -1,0 +1,26 @@
+{
+  "app": {
+    "title": "DecisionGuide",
+    "description": "A simple, logic-based assistant for governance and audit decisions."
+  },
+  "features": {
+    "enable_history": true,
+    "enable_analytics": false,
+    "enable_risk_scoring": true,
+    "enable_back_navigation": true,
+    "enable_csv_export": true
+  },
+  "performance": {
+    "cache_trees": true,
+    "session_timeout": 3600
+  },
+  "security": {
+    "max_history_entries": 100,
+    "rate_limit_enabled": false
+  },
+  "export": {
+    "default_format": "pdf",
+    "include_risk_scores": true
+  }
+}
+

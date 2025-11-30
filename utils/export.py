@@ -2,8 +2,9 @@
 Export utilities for DecisionGuide results
 """
 from datetime import datetime
-from io import BytesIO
+from io import BytesIO, StringIO
 import json
+import csv
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
@@ -11,6 +12,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from typing import Optional, Dict, Any, List
 
 
 def export_to_json(tree_title, decision, explanation, path, timestamp=None):
@@ -67,10 +69,71 @@ DECISION PATH
     return text
 
 
-def export_to_pdf(tree_title, decision, explanation, path, timestamp=None):
+def export_to_csv(tree_title: str, decision: str, explanation: str, path: List[str], 
+                  timestamp: Optional[str] = None, risk_score: Optional[Dict[str, Any]] = None) -> str:
     """
-    Export assessment result to PDF format
+    Export assessment result to CSV format.
+    
+    Args:
+        tree_title: Title of the assessment
+        decision: Final decision
+        explanation: Explanation text
+        path: Decision path
+        timestamp: Timestamp (optional)
+        risk_score: Risk score data (optional)
+        
+    Returns:
+        CSV formatted string
+    """
+    if timestamp is None:
+        timestamp = datetime.now().isoformat()
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow(["DecisionGuide Assessment Report"])
+    writer.writerow([])
+    writer.writerow(["Assessment", tree_title])
+    writer.writerow(["Date", timestamp])
+    writer.writerow(["Decision Code", decision])
+    writer.writerow([])
+    
+    # Risk score if available
+    if risk_score:
+        writer.writerow(["Risk Assessment"])
+        writer.writerow(["Risk Score", risk_score.get("score", "N/A")])
+        writer.writerow(["Risk Level", risk_score.get("level", "N/A")])
+        writer.writerow([])
+    
+    # Explanation
+    writer.writerow(["Explanation"])
+    writer.writerow([explanation])
+    writer.writerow([])
+    
+    # Decision path
+    writer.writerow(["Decision Path"])
+    writer.writerow(["Step", "Path Entry"])
+    for i, step in enumerate(path, 1):
+        writer.writerow([i, step])
+    
+    output.seek(0)
+    return output.getvalue()
+
+
+def export_to_pdf(tree_title: str, decision: str, explanation: str, path: List[str], 
+                  timestamp: Optional[str] = None, risk_score: Optional[Dict[str, Any]] = None):
+    """
+    Export assessment result to PDF format with optional risk score.
     Returns bytes buffer containing the PDF
+    
+    Args:
+        tree_title: Title of the assessment
+        decision: Final decision
+        explanation: Explanation text
+        path: Decision path
+        timestamp: Timestamp (optional)
+        risk_score: Risk score data (optional)
     """
     if timestamp is None:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -115,6 +178,11 @@ def export_to_pdf(tree_title, decision, explanation, path, timestamp=None):
         ['Date:', timestamp],
         ['Decision Code:', decision]
     ]
+    
+    # Add risk score if available
+    if risk_score:
+        info_data.append(['Risk Score:', f"{risk_score.get('score', 'N/A')}/100"])
+        info_data.append(['Risk Level:', risk_score.get('level', 'N/A')])
     
     info_table = Table(info_data, colWidths=[2*inch, 4*inch])
     info_table.setStyle(TableStyle([
@@ -176,9 +244,58 @@ def export_to_pdf(tree_title, decision, explanation, path, timestamp=None):
     return buffer
 
 
-def get_filename(tree_title, format_type):
+def export_history_to_csv(history: List[Dict[str, Any]]) -> str:
     """
-    Generate a filename for export
+    Export history to CSV format.
+    
+    Args:
+        history: List of history entries
+        
+    Returns:
+        CSV formatted string
+    """
+    if not history:
+        return ""
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow([
+        "Timestamp", "Tree ID", "Tree Title", "Decision", 
+        "Explanation", "Path Count", "Answers Count"
+    ])
+    
+    # Data rows
+    for entry in history:
+        explanation = entry.get("explanation", "")
+        if len(explanation) > 100:
+            explanation = explanation[:100] + "..."
+        
+        writer.writerow([
+            entry.get("timestamp", ""),
+            entry.get("tree_id", ""),
+            entry.get("tree_title", ""),
+            entry.get("decision", ""),
+            explanation,
+            len(entry.get("path", [])),
+            len(entry.get("answers", {}))
+        ])
+    
+    output.seek(0)
+    return output.getvalue()
+
+
+def get_filename(tree_title: str, format_type: str) -> str:
+    """
+    Generate a filename for export.
+    
+    Args:
+        tree_title: Title of the assessment
+        format_type: Export format (pdf, json, txt, csv)
+        
+    Returns:
+        Generated filename
     """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_title = tree_title.replace(" ", "_").replace("/", "-")
@@ -186,7 +303,8 @@ def get_filename(tree_title, format_type):
     extension = {
         'pdf': 'pdf',
         'json': 'json',
-        'txt': 'txt'
+        'txt': 'txt',
+        'csv': 'csv'
     }.get(format_type, 'txt')
     
     return f"DecisionGuide_{safe_title}_{timestamp}.{extension}"
