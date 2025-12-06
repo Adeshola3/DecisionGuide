@@ -283,62 +283,157 @@ def show_assessment_page():
         tab1, tab2, tab3 = st.tabs(["History", "Search", "Analytics"])
         
         with tab1:
-            st.subheader("Recent Assessments")
-            history = get_recent_history(limit=10)
+            st.subheader("Assessment History")
+            history = get_recent_history(limit=50)
+
             if history:
-                for entry in history:
-                    with st.expander(f"{entry['tree_title']} - {entry['decision'][:30]}..."):
-                        st.write(f"**Date:** {entry['timestamp'][:10]}")
-                        st.write(f"**Decision:** {entry['decision']}")
-                        if st.button("View Details", key=f"view_{entry.get('timestamp', '')}"):
-                            st.session_state.view_history_entry = entry
+                # Enhanced filters with date range
+                tree_ids = sorted({h.get("tree_id") for h in history if h.get("tree_id")})
+                decisions = sorted({h.get("decision") for h in history if h.get("decision")})
                 
-                if Config.ENABLE_CSV_EXPORT:
-                    if st.button("Export All History"):
-                        csv_data = export_history_to_csv(history)
-                        st.download_button(
-                            label="Download CSV",
-                            data=csv_data,
-                            file_name=f"DecisionGuide_History_{datetime.now().strftime('%Y%m%d')}.csv",
-                            mime="text/csv"
-                        )
+                col_f1, col_f2 = st.columns(2)
+                with col_f1:
+                    selected_tree = st.selectbox(
+                        "Filter by tree",
+                        options=["(All)"] + tree_ids,
+                        index=0,
+                        key="history_filter_tree"
+                    )
+                with col_f2:
+                    selected_decision = st.selectbox(
+                        "Filter by decision",
+                        options=["(All)"] + decisions,
+                        index=0,
+                        key="history_filter_decision"
+                    )
+                
+                # Date range filter
+                col_d1, col_d2 = st.columns(2)
+                with col_d1:
+                    date_from = st.date_input("From date", value=None, key="history_date_from")
+                with col_d2:
+                    date_to = st.date_input("To date", value=None, key="history_date_to")
+
+                filtered_history = []
+                for entry in history:
+                    # Tree filter
+                    if selected_tree != "(All)" and entry.get("tree_id") != selected_tree:
+                        continue
+                    # Decision filter
+                    if selected_decision != "(All)" and entry.get("decision") != selected_decision:
+                        continue
+                    # Date range filter
+                    try:
+                        entry_date = datetime.fromisoformat(entry.get("timestamp", "")).date()
+                        if date_from and entry_date < date_from:
+                            continue
+                        if date_to and entry_date > date_to:
+                            continue
+                    except (ValueError, AttributeError):
+                        pass
+                    filtered_history.append(entry)
+
+                # Table view
+                table_rows = [
+                    {
+                        "Date": e.get("timestamp", "")[:10],
+                        "Tree": e.get("tree_title", ""),
+                        "Decision": e.get("decision", ""),
+                        "Path steps": len(e.get("path", [])),
+                    }
+                    for e in filtered_history
+                ]
+                st.dataframe(table_rows, use_container_width=True, hide_index=True)
+
+                # CSV export
+                if Config.ENABLE_CSV_EXPORT and filtered_history:
+                    csv_data = export_history_to_csv(filtered_history)
+                    st.download_button(
+                        label="Download history as CSV",
+                        data=csv_data,
+                        file_name=f"DecisionGuide_History_{datetime.now().strftime('%Y%m%d')}.csv",
+                        mime="text/csv",
+                        use_container_width=True,
+                    )
+
+                # Expanders for details
+                for entry in filtered_history[:10]:
+                    with st.expander(f"{entry['tree_title']} - {entry['decision'][:40]}"):
+                        st.write(f"**Date:** {entry['timestamp'][:19]}")
+                        st.write(f"**Decision:** {entry['decision']}")
+                        st.write(f"**Path steps:** {len(entry.get('path', []))}")
             else:
                 st.caption("No history yet")
-            
-            if st.button("Clear History"):
+
+            if st.button("Clear history"):
                 from utils.history import clear_history
                 clear_history()
                 st.rerun()
         
         with tab2:
-            st.subheader("Search History")
+            st.subheader("Search history")
             search_query = st.text_input("Search by tree, decision, or explanation", key="history_search")
             if search_query:
                 results = search_history(search_query, limit=10)
                 if results:
-                    for entry in results:
-                        st.write(f"**{entry['tree_title']}** - {entry['decision']}")
-                        st.caption(entry['timestamp'][:10])
+                    rows = [
+                        {
+                            "Date": e.get("timestamp", "")[:19],
+                            "Tree": e.get("tree_title", ""),
+                            "Decision": e.get("decision", ""),
+                        }
+                        for e in results
+                    ]
+                    st.dataframe(rows, use_container_width=True, hide_index=True)
                 else:
                     st.info("No results found")
         
         with tab3:
             if Config.ENABLE_ANALYTICS:
-                st.subheader("Statistics")
+                st.subheader("Analytics Dashboard")
                 stats = get_statistics()
                 if stats.get("total_assessments", 0) > 0:
-                    st.metric("Total Assessments", stats["total_assessments"])
-                    st.metric("Recent Activity (7 days)", stats.get("recent_activity_count", 0))
+                    # Key metrics in columns
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Total Assessments", stats["total_assessments"])
+                    with col2:
+                        st.metric("Recent Activity (7 days)", stats.get("recent_activity_count", 0))
+                    with col3:
+                        most_used = stats.get("most_used_tree", "N/A")
+                        st.metric("Most Used Tree", most_used[:20] + "..." if len(str(most_used)) > 20 else most_used)
                     
+                    st.markdown("---")
+                    
+                    # Tree usage chart
                     if stats.get("tree_usage"):
-                        st.write("**Tree Usage:**")
-                        for tree_id, count in list(stats["tree_usage"].items())[:5]:
-                            st.caption(f"{tree_id}: {count}")
+                        st.subheader("Tree Usage")
+                        tree_usage_data = dict(list(stats["tree_usage"].items())[:10])
+                        st.bar_chart(tree_usage_data)
+                    
+                    # Decision distribution
+                    if stats.get("decision_distribution"):
+                        st.subheader("Decision Distribution")
+                        decision_data = dict(list(stats["decision_distribution"].items())[:10])
+                        st.bar_chart(decision_data)
+                    
+                    # Daily activity
+                    if stats.get("daily_activity"):
+                        st.subheader("Daily Activity")
+                        daily_data = stats["daily_activity"]
+                        st.line_chart(daily_data)
                 else:
-                    st.info("No statistics available yet")
+                    st.info("No statistics available yet. Complete some assessments to see analytics.")
     
-    # Back button
+    # Back button - clear all assessment state when going back
     if st.button("Back to Home", key="back_btn"):
+        selected_tree_id = st.session_state.get('selected_tree')
+        if selected_tree_id:
+            # Clear all state for this assessment
+            st.session_state.pop(f"answers_{selected_tree_id}", None)
+            st.session_state.pop(f"result_{selected_tree_id}", None)
+            st.session_state.pop(f"path_{selected_tree_id}", None)
+            st.session_state.pop(f"node_history_{selected_tree_id}", None)
         st.session_state.show_landing = True
         st.session_state.pop('selected_tree', None)
         st.rerun()
@@ -382,7 +477,47 @@ def show_assessment_page():
 
     answers = st.session_state[answers_key]
     node_history = st.session_state[node_history_key]
-    
+
+    # Clickable breadcrumb navigation (jump back to earlier step)
+    if node_history:
+        nodes = tree.get("nodes", {})
+
+        def _short_label_for_id(n_id: str) -> str:
+            """Get short label for breadcrumb, preferring 'label' field over 'text'."""
+            node_data = nodes.get(n_id, {})
+            # Prefer 'label' field if available (shorter), otherwise use 'text'
+            raw = node_data.get("label") or node_data.get("text") or n_id
+            text = sanitize_input(str(raw))
+            # If using 'text' field, make it shorter; if 'label', keep as is (assumed short)
+            if node_data.get("label"):
+                return text[:30]  # Label field, keep short
+            else:
+                return (text[:25] + "...") if len(text) > 25 else text  # Text field, truncate more
+
+        labels = [
+            f"{idx + 1}. {_short_label_for_id(n_id)}"
+            for idx, n_id in enumerate(node_history)
+        ]
+
+        selected_index = st.selectbox(
+            "Breadcrumb",
+            options=list(range(len(labels))),
+            format_func=lambda i: labels[i],
+            index=len(labels) - 1,
+            key=f"breadcrumb_{selected_tree_id}",
+        )
+
+        # If user picked an earlier step, trim answers and history and clear completion
+        if selected_index < len(node_history) - 1:
+            keep_ids = set(node_history[: selected_index + 1])
+            for nid in list(answers.keys()):
+                if nid not in keep_ids:
+                    del answers[nid]
+            st.session_state[node_history_key] = node_history[: selected_index + 1]
+            st.session_state[result_key] = None
+            st.session_state[path_key] = []
+            st.rerun()
+
     # Back navigation button (if enabled and we have history)
     if Config.ENABLE_BACK_NAVIGATION and node_history:
         col1, col2 = st.columns([1, 4])
@@ -393,13 +528,11 @@ def show_assessment_page():
                     last_node = node_history.pop()
                     if last_node in answers:
                         del answers[last_node]
-                    st.rerun()
-    
-    # Progress indicator
-    current_step, total_steps, progress = calculate_progress(tree, answers)
-    if total_steps > 0:
-        st.progress(progress / 100.0, text=f"Progress: Step {current_step} of {total_steps} ({int(progress)}%)")
-    
+                # Clear completion state as well when stepping back
+                st.session_state[result_key] = None
+                st.session_state[path_key] = []
+                st.rerun()
+
     decision, explanation, path = traverse_tree_interactive(
         tree, 
         tree["root"], 
@@ -409,6 +542,26 @@ def show_assessment_page():
     )
     
     st.session_state[path_key] = path
+
+    # Progress indicator (recomputed so it reflects latest state)
+    current_step, total_steps, progress = calculate_progress(tree, answers)
+    
+    # If decision is reached, show 100% progress
+    if decision is not None:
+        if total_steps > 0:
+            progress = 100.0
+            current_step = total_steps
+        else:
+            # If no questions but decision reached, still show complete
+            progress = 100.0
+            current_step = 1
+            total_steps = 1
+
+    if total_steps > 0:
+        st.progress(
+            progress / 100.0,
+            text=f"Progress: Step {current_step} of {total_steps} ({int(progress)}%)",
+        )
 
     if decision is not None:
         st.session_state[result_key] = {
@@ -434,14 +587,13 @@ def show_assessment_page():
         
         result = st.session_state[result_key]
         
-        # Risk scoring integration (if tree has scoring config)
-        if "scoring" in tree:
+        # Optional detailed risk report (separate from summary below)
+        if "scoring" in tree and Config.ENABLE_RISK_SCORING:
             try:
                 scorer = RiskScorer(tree)
-                # Convert answers to format expected by RiskScorer
                 risk_answers = [
-                    {"node_id": k, "choice": v} 
-                    for k, v in answers.items() 
+                    {"node_id": k, "choice": v}
+                    for k, v in answers.items()
                     if v is not None
                 ]
                 if risk_answers:
@@ -449,11 +601,48 @@ def show_assessment_page():
                     st.markdown("<br>", unsafe_allow_html=True)
             except Exception as e:
                 st.warning(f"Risk scoring unavailable: {e}")
+
+        # Get risk score if available (for summary + exports)
+        risk_score_data = None
+        if "scoring" in tree and Config.ENABLE_RISK_SCORING:
+            try:
+                scorer = RiskScorer(tree)
+                risk_answers = [
+                    {"node_id": k, "choice": v}
+                    for k, v in answers.items()
+                    if v is not None
+                ]
+                if risk_answers:
+                    score = scorer.calculate_score(risk_answers)
+                    risk_details = scorer.get_risk_details(score)
+                    risk_score_data = {
+                        "score": score,
+                        "level": risk_details["level"],
+                    }
+            except Exception:
+                risk_score_data = None
+
+        # Result Display with Risk Score
+        risk_score_html = ""
+        if risk_score_data:
+            risk_level_color = {
+                "Low": "#4caf50",
+                "Medium": "#ff9800", 
+                "High": "#f44336",
+                "Critical": "#d32f2f"
+            }.get(risk_score_data['level'], "#ffffff")
+            risk_score_html = f"""
+            <div style='background: #2a2a2a; border-left: 4px solid {risk_level_color}; padding: 1rem; margin-bottom: 1.5rem; border-radius: 4px;'>
+                <strong style='color: #ffffff;'>Risk Score:</strong> 
+                <span style='color: {risk_level_color}; font-size: 1.2rem; font-weight: bold;'>{risk_score_data['score']}/100</span>
+                <span style='color: #b0b0b0; margin-left: 1rem;'>({risk_score_data['level']} Risk)</span>
+            </div>
+            """
         
-        # Result Display
         st.markdown(f"""
         <div class='result-card'>
             <span class='result-badge'>Final Decision</span>
+            {risk_score_html}
             <h3 style='font-size: 1.5rem; margin-bottom: 1rem; color: #ffffff;'>{result['decision']}</h3>
             {f"<p style='color: #b0b0b0; font-size: 1rem; line-height: 1.6;'>{result['explanation']}</p>" if result['explanation'] else ""}
         </div>
@@ -587,6 +776,13 @@ def traverse_tree_interactive(
     """
     try:
         nodes = tree.get("nodes", {})
+
+        def _short_label(n_id: str) -> str:
+            """Helper to derive a concise label for breadcrumbs and path entries."""
+            node_data = nodes.get(n_id, {})
+            raw = node_data.get("label") or node_data.get("text") or n_id
+            text = sanitize_input(str(raw))
+            return (text[:40] + "...") if len(text) > 40 else text
         if node_id not in nodes:
             st.error(f"Node '{node_id}' not found in tree")
             return None, None, path_so_far
@@ -597,11 +793,11 @@ def traverse_tree_interactive(
         
         if node_type == "choice":
             current_question = count_answered_questions(answers) + 1
-            
-            # Breadcrumb navigation
+
+            # Breadcrumb navigation (short labels, last few steps only)
             if node_history:
-                breadcrumb = " > ".join([nodes.get(n, {}).get("text", n)[:30] for n in node_history[-3:]])
-                st.caption(f"{breadcrumb} > {node_label[:30]}...")
+                breadcrumb = " > ".join([_short_label(n) for n in node_history[-3:]])
+                st.caption(f"{breadcrumb} > {_short_label(node_id)}")
             
             st.markdown(f"""
             <div class='question-card'>
@@ -638,7 +834,7 @@ def traverse_tree_interactive(
                 if node_id not in node_history:
                     node_history.append(node_id)
             
-            path_entry = f"{node_label} > {selected}"
+            path_entry = f"{_short_label(node_id)} > {selected}"
             new_path = path_so_far + [path_entry]
             
             selected_branch = node["options"].get(selected)
